@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/TitleScreen.unity
+    guid: 131fec176c6acbd4ab618d0d116aa510
+  - enabled: 1
+    path: Assets/Scenes/ParkingLot.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/Lobby.unity
+    guid: 2a0835919c114b84d92eb94f491521d4
+  - enabled: 1
+    path: Assets/Scenes/RoomA.unity
+    guid: 9d8f1df0939989f43b3fe10728192103
+  - enabled: 1
+    path: Assets/Scenes/RoomC.unity
+    guid: 351e2decdcffc204bbb5429e3b592ed8
+  - enabled: 1
+    path: Assets/Scenes/RoomB.unity
+    guid: 80cd9c4f8bfa8084283f93bdf0b36c2c
+  - enabled: 1
+    path: Assets/Scenes/SamRoom.unity
+    guid: aca8acc8d82d60a4d9336fb50698abf8
+  - enabled: 1
+    path: Assets/Scenes/BossRoom.unity
+    guid: 7437224af51078b41a9ff8ca3d461d65
+  - enabled: 1
+    path: Assets/Scenes/Credits.unity
+    guid: 9269653088f1ae04980466ab2907c4eb
+  m_configObjects: {}

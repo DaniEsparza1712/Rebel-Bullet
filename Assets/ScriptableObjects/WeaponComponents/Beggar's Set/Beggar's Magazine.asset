@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae8565d766cb83e4f9913d1bd2bcac99, type: 3}
+  m_Name: Beggar's Magazine
+  m_EditorClassIdentifier: 
+  componentName: Beggar's Magazine
+  shootingRate: -3
+  damage: 15
+  bulletSpeed: 2
+  bulletSize: 0.5
+  accuracy: 10
+  overheatRate: -2
+  bulletLife: 0.25
+  bullet: {fileID: 3401342972212413169, guid: 12242f2b0a064044fb1c62dd10e27916, type: 3}
+  muzzle: {fileID: 2947498226803596558, guid: 0f391a229a3d76d429d3d1486ba0283c, type: 3}

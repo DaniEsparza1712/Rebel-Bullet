@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae8565d766cb83e4f9913d1bd2bcac99, type: 3}
+  m_Name: ScorpionMagazine
+  m_EditorClassIdentifier: 
+  componentName: Scorpion Magazine
+  shootingRate: -5
+  damage: 5
+  bulletSpeed: 5
+  bulletSize: 0.3
+  accuracy: 7
+  overheatRate: -0.5
+  bulletLife: 2
+  bullet: {fileID: 7240486321836612006, guid: bac87364028829e448a60d03507eb8d0, type: 3}
+  muzzle: {fileID: 2808888663078444570, guid: 552ed89a82cbb1f4e82b78ef8d2752bc, type: 3}
