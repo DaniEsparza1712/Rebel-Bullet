@@ -27,8 +27,8 @@ namespace UniVRM10
 
         public void Apply(LookAtEyeDirection eyeDirection, Dictionary<ExpressionKey, float> actualWeights)
         {
-            var yaw = eyeDirection.Yaw;
-            var pitch = eyeDirection.Pitch;
+            var yaw = eyeDirection.LeftYaw;
+            var pitch = eyeDirection.LeftPitch;
 
             if (yaw < 0)
             {

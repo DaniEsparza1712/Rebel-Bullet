@@ -2,7 +2,6 @@
 using UnityEngine;
 using UniGLTF;
 using System;
-using VRM10.Settings;
 using VRMShaders;
 #if UNITY_2020_2_OR_NEWER
 using UnityEditor.AssetImporters;
@@ -17,18 +16,17 @@ namespace UniVRM10
     {
         static IMaterialDescriptorGenerator GetMaterialDescriptorGenerator(RenderPipelineTypes renderPipeline)
         {
-            var settings = Vrm10ProjectEditorSettings.instance;
-            if (settings.MaterialDescriptorGeneratorFactory != null)
+            switch (renderPipeline)
             {
-                return settings.MaterialDescriptorGeneratorFactory.Create();
-            }
+                case RenderPipelineTypes.BuiltinRenderPipeline:
+                    return new BuiltInVrm10MaterialDescriptorGenerator();
 
-            return renderPipeline switch
-            {
-                RenderPipelineTypes.BuiltinRenderPipeline => new BuiltInVrm10MaterialDescriptorGenerator(),
-                RenderPipelineTypes.UniversalRenderPipeline => new UrpVrm10MaterialDescriptorGenerator(),
-                _ => throw new NotImplementedException()
-            };
+                case RenderPipelineTypes.UniversalRenderPipeline:
+                    return new UrpVrm10MaterialDescriptorGenerator();
+
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         static void Process(Vrm10Data result, ScriptedImporter scriptedImporter, AssetImportContext context, RenderPipelineTypes renderPipeline)

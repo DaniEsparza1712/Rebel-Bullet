@@ -89,8 +89,11 @@ namespace UniVRM10
                     foreach (var kv in runtime.GetWeights())
                     {
                         var key = kv.Key;
-                        var value = ExpressionSlider(key, kv.Value);
-                        m_map[key] = value;
+                        if (kv.Key.Preset != ExpressionPreset.custom)
+                        {
+                            var value = ExpressionPresetSlider(expression, kv.Key.Preset, kv.Value);
+                            m_map[key] = value;
+                        }
                     }
                     GUILayout.FlexibleSpace();
 
@@ -115,10 +118,10 @@ namespace UniVRM10
             }
         }
 
-        float ExpressionSlider(ExpressionKey key, float value)
+        float ExpressionPresetSlider(VRM10ObjectExpression expression, ExpressionPreset preset, float value)
         {
             EditorGUILayout.BeginHorizontal(Style);
-            EditorGUILayout.LabelField(key.ToString());
+            EditorGUILayout.LabelField(preset.ToString());
             value = EditorGUILayout.Slider(value, 0, 1.0f);
             EditorGUILayout.EndHorizontal();
             return value;

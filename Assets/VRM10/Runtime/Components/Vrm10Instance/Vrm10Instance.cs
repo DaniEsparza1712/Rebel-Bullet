@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 
 namespace UniVRM10
@@ -45,20 +43,11 @@ namespace UniVRM10
         public bool DrawLookAtGizmo = true;
 
         /// <summay>
-        /// The model looks at position of the Transform specified in this field.
-        /// That behaviour is available only when LookAtTargetType is SpecifiedTransform.
-        ///
-        /// モデルはここで指定した Transform の位置の方向に目を向けます。
-        /// LookAtTargetType を SpecifiedTransform に設定したときのみ有効です。
+        /// LookAtTargetTypes.CalcYawPitchToGaze時の注視点
         /// </summary>
-        [SerializeField, FormerlySerializedAs("Gaze")]
-        public Transform LookAtTarget;
+        [SerializeField]
+        public Transform Gaze;
 
-        /// <summary>
-        /// Specify "LookAt" behaviour at runtime.
-        ///
-        /// 実行時の目の動かし方を指定します。
-        /// </summary>
         [SerializeField]
         public VRM10ObjectLookAt.LookAtTargetTypes LookAtTargetType;
 
@@ -67,8 +56,12 @@ namespace UniVRM10
 
         /// <summary>
         /// ControlRig の生成オプション
+        /// 
+        /// null: ControlRigGenerationOption.None
+        /// empty: ControlRigGenerationOption.Generate = Vrm0XCompatibleRig
+        /// other: ControlRigGenerationOption.Vrm0XCompatibleWithXR_EXT_hand_tracking など
         /// </summary>
-        private bool m_useControlRig;
+        private IReadOnlyDictionary<HumanBodyBones, Quaternion> m_controlRigInitialRotations;
 
         /// <summary>
         /// VRM ファイルに記録された Humanoid ボーンに対応します。
@@ -95,15 +88,15 @@ namespace UniVRM10
             {
                 if (m_runtime == null)
                 {
-                    m_runtime = new Vrm10Runtime(this, m_useControlRig);
+                    m_runtime = new Vrm10Runtime(this, m_controlRigInitialRotations);
                 }
                 return m_runtime;
             }
         }
 
-        internal void InitializeAtRuntime(bool useControlRig)
+        internal void InitializeAtRuntime(IReadOnlyDictionary<HumanBodyBones, Quaternion> controlRigInitialRotations)
         {
-            m_useControlRig = useControlRig;
+            m_controlRigInitialRotations = controlRigInitialRotations;
         }
 
         void Start()
@@ -117,7 +110,18 @@ namespace UniVRM10
 
             // cause new Vrm10Runtime.
             // init LookAt init rotation.
-            var _ = Runtime;
+            var runtime = Runtime;
+
+            if (LookAtTargetType == VRM10ObjectLookAt.LookAtTargetTypes.CalcYawPitchToGaze)
+            {
+                if (Gaze == null)
+                {
+                    LookAtTargetType = VRM10ObjectLookAt.LookAtTargetTypes.SetYawPitch;
+                }
+            }
+
+            GetComponent<Animator>().enabled = true;
+            enabled = false;
         }
 
         private void Update()
@@ -164,15 +168,6 @@ namespace UniVRM10
             return true;
         }
 
-        #region Obsolete
 
-        [Obsolete]
-        public Transform Gaze
-        {
-            get => LookAtTarget;
-            set => LookAtTarget = value;
-        }
-
-        #endregion
     }
 }

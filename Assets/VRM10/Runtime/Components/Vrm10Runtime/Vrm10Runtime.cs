@@ -21,7 +21,7 @@ namespace UniVRM10
     /// </summary>
     public class Vrm10Runtime : IDisposable
     {
-        private readonly Vrm10Instance m_instance;
+        private readonly Vrm10Instance m_target;
         private readonly Transform m_head;
         private readonly FastSpringBoneService m_fastSpringBoneService;
         private readonly IReadOnlyDictionary<Transform, TransformState> m_defaultTransformStates;
@@ -39,8 +39,6 @@ namespace UniVRM10
         public Vrm10RuntimeExpression Expression { get; }
         public Vrm10RuntimeLookAt LookAt { get; }
 
-        public IVrm10Animation VrmAnimation { get; set; }
-
         public Vector3 ExternalForce
         {
             get => m_externalData.ExternalForce;
@@ -51,38 +49,33 @@ namespace UniVRM10
             }
         }
 
-        public Vrm10Runtime(Vrm10Instance instance, bool useControlRig)
+        public Vrm10Runtime(Vrm10Instance target, IReadOnlyDictionary<HumanBodyBones, Quaternion> controlRigInitialRotations)
         {
-            if (!Application.isPlaying)
-            {
-                Debug.LogWarning($"{nameof(Vrm10Runtime)} expects runtime behaviour.");
-            }
+            m_target = target;
 
-            m_instance = instance;
-
-            if (!instance.TryGetBoneTransform(HumanBodyBones.Head, out m_head))
+            if (!target.TryGetBoneTransform(HumanBodyBones.Head, out m_head))
             {
                 throw new Exception();
             }
 
-            if (useControlRig)
+            if (controlRigInitialRotations != null)
             {
-                ControlRig = new Vrm10RuntimeControlRig(instance.Humanoid, m_instance.transform);
+                ControlRig = new Vrm10RuntimeControlRig(target.Humanoid, m_target.transform, controlRigInitialRotations);
             }
-            Constraints = instance.GetComponentsInChildren<IVrm10Constraint>();
-            LookAt = new Vrm10RuntimeLookAt(instance.Vrm.LookAt, instance.Humanoid, ControlRig);
-            Expression = new Vrm10RuntimeExpression(instance, LookAt.EyeDirectionApplicable);
+            Constraints = target.GetComponentsInChildren<IVrm10Constraint>();
+            LookAt = new Vrm10RuntimeLookAt(target.Vrm.LookAt, target.Humanoid, m_head, target.LookAtTargetType, target.Gaze);
+            Expression = new Vrm10RuntimeExpression(target, LookAt, LookAt.EyeDirectionApplicable);
 
-            var gltfInstance = instance.GetComponent<RuntimeGltfInstance>();
-            if (gltfInstance != null)
+            var instance = target.GetComponent<RuntimeGltfInstance>();
+            if (instance != null)
             {
                 // ランタイムインポートならここに到達してゼロコストになる
-                m_defaultTransformStates = gltfInstance.InitialTransformStates;
+                m_defaultTransformStates = instance.InitialTransformStates;
             }
             else
             {
                 // エディタでプレハブ配置してる奴ならこっちに到達して収集する
-                m_defaultTransformStates = instance.GetComponentsInChildren<Transform>()
+                m_defaultTransformStates = target.GetComponentsInChildren<Transform>()
                     .ToDictionary(tf => tf, tf => new TransformState(tf));
             }
 
@@ -90,7 +83,7 @@ namespace UniVRM10
             if (Application.isPlaying)
             {
                 m_fastSpringBoneService = FastSpringBoneService.Instance;
-                m_fastSpringBoneBuffer = CreateFastSpringBoneBuffer(m_instance.SpringBone);
+                m_fastSpringBoneBuffer = CreateFastSpringBoneBuffer(m_target.SpringBone);
                 m_fastSpringBoneService.BufferCombiner.Register(m_fastSpringBoneBuffer);
             }
         }
@@ -111,7 +104,7 @@ namespace UniVRM10
             m_fastSpringBoneService.BufferCombiner.Unregister(m_fastSpringBoneBuffer);
 
             m_fastSpringBoneBuffer.Dispose();
-            m_fastSpringBoneBuffer = CreateFastSpringBoneBuffer(m_instance.SpringBone);
+            m_fastSpringBoneBuffer = CreateFastSpringBoneBuffer(m_target.SpringBone);
 
             m_fastSpringBoneService.BufferCombiner.Register(m_fastSpringBoneBuffer);
         }
@@ -180,8 +173,7 @@ namespace UniVRM10
         /// <summary>
         /// 毎フレーム関連コンポーネントを解決する
         ///
-        /// * Update from VrmAnimation
-        /// * Constraint
+        /// * Contraint
         /// * Spring
         /// * LookAt
         /// * Expression
@@ -189,50 +181,20 @@ namespace UniVRM10
         /// </summary>
         public void Process()
         {
-            // 1. Update From VrmAnimation
-            if (VrmAnimation != null)
-            {
-                // copy pose
-                {
-                    Vrm10Retarget.Retarget(VrmAnimation.ControlRig, (ControlRig, ControlRig));
-                }
-
-                // update expressions
-                foreach (var (k, v) in VrmAnimation.ExpressionMap)
-                {
-                    Expression.SetWeight(k, v());
-                }
-
-                // look at
-                if (VrmAnimation.LookAt.HasValue)
-                {
-                    LookAt.LookAtInput = VrmAnimation.LookAt.Value;
-                }
-            }
-
-            // 2. Control Rig
+            // 1. Control Rig
             ControlRig?.Process();
 
-            // 3. Constraints
+            // 2. Constraints
             foreach (var constraint in Constraints)
             {
                 constraint.Process();
             }
 
-            if (m_instance.LookAtTargetType == VRM10ObjectLookAt.LookAtTargetTypes.SpecifiedTransform
-            && m_instance.LookAtTarget != null)
-            {
-                // Transform 追跡で視線を生成する。
-                // 値を上書きします。
-                LookAt.LookAtInput = new LookAtInput { WorldPosition = m_instance.LookAtTarget.position };
-            }
+            // 3. Gaze control
+            LookAt.Process(m_target.LookAtTargetType, m_target.Gaze);
 
-            // 4. Gaze control
-            var eyeDirection = LookAt.Process();
-
-            // 5. Apply Expression
-            // LookAt の角度制限などはこちらで処理されます。
-            Expression.Process(eyeDirection);
+            // 4. Expression
+            Expression.Process();
         }
     }
 }

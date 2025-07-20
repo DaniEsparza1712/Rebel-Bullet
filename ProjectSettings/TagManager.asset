@@ -11,7 +11,8 @@ TagManager:
   - PlayerBullet
   - Melee
   - Machine
-  - Explodable
+  - Obstacle
+  - Interactable
   layers:
   - Default
   - TransparentFX
@@ -24,12 +25,12 @@ TagManager:
   - Enemy
   - Bullet
   - UIPause
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - MainCam
+  - FaceCam
+  - Obstacle
+  - Lenses
+  - Interactable
+  - PlayerInteractable
   - 
   - 
   - 

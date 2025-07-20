@@ -18,7 +18,7 @@ namespace UniVRM10
         private readonly Vrm10Data m_vrm;
         /// VrmLib.Model の オブジェクトと UnityEngine.Object のマッピングを記録する
         private readonly ModelMap m_map = new ModelMap();
-        private readonly bool m_useControlRig;
+        private readonly IReadOnlyDictionary<HumanBodyBones, Quaternion> m_controlRigInitialRotations;
 
         private VrmLib.Model m_model;
         private IReadOnlyDictionary<SubAssetKey, UnityEngine.Object> m_externalMap;
@@ -31,7 +31,7 @@ namespace UniVRM10
             IReadOnlyDictionary<SubAssetKey, UnityEngine.Object> externalObjectMap = null,
             ITextureDeserializer textureDeserializer = null,
             IMaterialDescriptorGenerator materialGenerator = null,
-            bool useControlRig = false
+            IReadOnlyDictionary<HumanBodyBones, Quaternion> controlRigInitialRotations = null
             )
             : base(vrm.Data, externalObjectMap, textureDeserializer)
         {
@@ -40,10 +40,10 @@ namespace UniVRM10
                 throw new ArgumentNullException("vrm");
             }
             m_vrm = vrm;
-            m_useControlRig = useControlRig;
+            m_controlRigInitialRotations = controlRigInitialRotations;
 
             TextureDescriptorGenerator = new Vrm10TextureDescriptorGenerator(Data);
-            MaterialDescriptorGenerator = materialGenerator ?? Vrm10RenderPipelineMaterialDescriptorGeneratorDescriptorUtility.GetValidVrm10MaterialDescriptorGenerator();
+            MaterialDescriptorGenerator = materialGenerator ?? new BuiltInVrm10MaterialDescriptorGenerator();
 
             m_externalMap = externalObjectMap;
             if (m_externalMap == null)
@@ -247,7 +247,7 @@ namespace UniVRM10
 
             // VrmController
             var controller = Root.AddComponent<Vrm10Instance>();
-            controller.InitializeAtRuntime(m_useControlRig);
+            controller.InitializeAtRuntime(m_controlRigInitialRotations);
             controller.enabled = false;
 
             // vrm
@@ -369,7 +369,6 @@ namespace UniVRM10
                 vrm.Meta = meta;
                 meta.Name = src.Name;
                 meta.Version = src.Version;
-                meta.CopyrightInformation = src.CopyrightInformation;
                 meta.ContactInformation = src.ContactInformation;
                 meta.ThirdPartyLicenses = src.ThirdPartyLicenses;
                 // avatar

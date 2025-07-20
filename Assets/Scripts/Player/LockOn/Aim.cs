@@ -26,6 +26,6 @@ public class Aim : MonoBehaviour
         }
         else
             _targetPos = _camTransform.position + _camTransform.forward * castDist;
-        transform.position = _targetPos;
+        transform.position = Vector3.MoveTowards(transform.position, _targetPos, speed * Time.deltaTime);
     }
 }

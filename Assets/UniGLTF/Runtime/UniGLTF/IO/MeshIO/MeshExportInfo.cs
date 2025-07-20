@@ -264,7 +264,7 @@ namespace UniGLTF
             }
             else
             {
-                Debug.LogWarning($"unknown renderer: {renderer}", context: renderer);
+                throw new NotImplementedException();
             }
         }
 
@@ -412,7 +412,7 @@ namespace UniGLTF
             foreach (var node in nodes)
             {
                 var renderer = node.GetComponent<Renderer>();
-                if (renderer == null || !renderer.enabled)
+                if (renderer == null)
                 {
                     continue;
                 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,12 +15,30 @@ public class IK_Controller : MonoBehaviour
 
     public Transform rightElbowTr;
     public Transform leftElbowTr;
+    
+    private PlayerController _playerController;
+
+    private void Awake()
+    {
+        _playerController = GetComponent<PlayerController>();
+        animator = GetComponent<Animator>();
+        
+        _playerController.OnGunOut += (sender, args) =>
+        {
+            lookAt = true;
+            pointAt = true;
+        };
+        _playerController.OnGunIn += (sender, args) =>
+        {
+            lookAt = false;
+            pointAt = false;
+        };
+    }
 
     // Start is called before the first frame update
     void Start()
     {
         armLerp = 0;
-        animator = GetComponent<Animator>();
     }
     private void Update() {
         if(armLerp < 1 && pointAt)

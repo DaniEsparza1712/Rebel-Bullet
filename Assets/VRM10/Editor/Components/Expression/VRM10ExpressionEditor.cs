@@ -60,36 +60,23 @@ namespace UniVRM10
             {
                 return;
             }
-            ClearPreview();
+            ClearScene();
             m_target.Prefab = prefab;
-            Initialize();
         }
 
         void OnEnable()
-        {
-            Initialize();
-        }
-
-        void OnDisable()
-        {
-            ClearPreview();
-        }
-
-        void Initialize()
         {
             m_target = (VRM10Expression)target;
             m_renderer = new PreviewFaceRenderer();
         }
 
-        void ClearPreview()
+        void OnDisable()
         {
             if (m_renderer != null)
             {
                 m_renderer.Dispose();
                 m_renderer = null;
             }
-
-            m_serializedEditor = null;
             ClearScene();
         }
 

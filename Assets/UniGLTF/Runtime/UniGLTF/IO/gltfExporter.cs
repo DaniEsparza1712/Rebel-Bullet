@@ -144,8 +144,6 @@ namespace UniGLTF
             {
                 GameObject.Destroy(Copy);
             }
-
-            _textureExporter.Dispose();
         }
 
         #region Export
@@ -164,7 +162,7 @@ namespace UniGLTF
             {
                 var meshRenderer = x.GetComponent<MeshRenderer>();
 
-                if (meshRenderer != null && meshRenderer.enabled)
+                if (meshRenderer != null)
                 {
                     var meshFilter = x.GetComponent<MeshFilter>();
                     if (meshFilter != null)
@@ -194,7 +192,7 @@ namespace UniGLTF
                 }
 
                 var skinnedMeshRenderer = x.GetComponent<SkinnedMeshRenderer>();
-                if (skinnedMeshRenderer != null && skinnedMeshRenderer.enabled)
+                if (skinnedMeshRenderer != null)
                 {
                     var mesh = skinnedMeshRenderer.sharedMesh;
                     var materials = skinnedMeshRenderer.sharedMaterials;

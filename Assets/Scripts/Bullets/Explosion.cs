@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class Explosion : MonoBehaviour
 {
-    [SerializeField] private int damage;
+    [SerializeField] private Attack attack;
     [SerializeField] private LayerMask interactionMask;
     [SerializeField] private List<string> targetsTag;
 
@@ -14,7 +14,9 @@ public class Explosion : MonoBehaviour
     {
         if (targetsTag.Contains(other.tag))
         {
-            other.GetComponent<LifeSystem>().ApplyDamage(damage);
+            var dir = (other.transform.position - transform.position) + Vector3.up * 1.5f;
+            var args = new AttackArgs(attack, other.ClosestPoint(transform.position), dir.normalized, transform.position);
+            other.GetComponent<EnemyHittable>().OnGetHit(args);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace VRMShaders
@@ -8,7 +8,7 @@ namespace VRMShaders
     ///
     /// glTF 拡張で Texture の用途を増やす必要がある場合は、この interface を継承して実装すればよい。
     /// </summary>
-    public interface ITextureExporter: IDisposable
+    public interface ITextureExporter
     {
         /// <summary>
         /// 指定の Texture を、 sRGB 色空間の値を持つ Texture に出力するように指示する。

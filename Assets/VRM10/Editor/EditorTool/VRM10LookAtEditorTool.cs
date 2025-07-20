@@ -69,24 +69,24 @@ namespace UniVRM10
             {
                 EditorGUI.BeginChangeCheck();
 
-                var eyeWorldPosition = head.localToWorldMatrix.MultiplyPoint(root.Vrm.LookAt.OffsetFromHead);
-                eyeWorldPosition = Handles.PositionHandle(eyeWorldPosition, head.rotation);
+                var worldOffset = head.localToWorldMatrix.MultiplyPoint(root.Vrm.LookAt.OffsetFromHead);
+                worldOffset = Handles.PositionHandle(worldOffset, head.rotation);
 
-                Handles.DrawDottedLine(head.position, eyeWorldPosition, 5);
+                Handles.DrawDottedLine(head.position, worldOffset, 5);
                 Handles.SphereHandleCap(0, head.position, Quaternion.identity, 0.02f, Event.current.type);
-                Handles.SphereHandleCap(0, eyeWorldPosition, Quaternion.identity, 0.02f, Event.current.type);
+                Handles.SphereHandleCap(0, worldOffset, Quaternion.identity, 0.02f, Event.current.type);
 
                 if (EditorGUI.EndChangeCheck())
                 {
                     Undo.RecordObject(root.Vrm, "LookAt.OffsetFromHead");
 
-                    root.Vrm.LookAt.OffsetFromHead = head.worldToLocalMatrix.MultiplyPoint(eyeWorldPosition);
+                    root.Vrm.LookAt.OffsetFromHead = head.worldToLocalMatrix.MultiplyPoint(worldOffset);
                 }
             }
 
             if (Application.isPlaying)
             {
-                OnSceneGUILookAt(root.Vrm.LookAt, root.Runtime.LookAt, root.LookAtTargetType, root.LookAtTarget);
+                OnSceneGUILookAt(root.Vrm.LookAt, root.Runtime.LookAt, head, root.LookAtTargetType, root.Gaze);
             }
             else
             {
@@ -125,27 +125,28 @@ namespace UniVRM10
 
         const float RADIUS = 0.5f;
 
-        static void OnSceneGUILookAt(VRM10ObjectLookAt lookAt, Vrm10RuntimeLookAt runtime, VRM10ObjectLookAt.LookAtTargetTypes lookAtTargetType, Transform lookAtTarget)
+        static void OnSceneGUILookAt(VRM10ObjectLookAt lookAt, Vrm10RuntimeLookAt runtime, Transform head, VRM10ObjectLookAt.LookAtTargetTypes lookAtTargetType, Transform gaze)
         {
-            if (lookAtTargetType == VRM10ObjectLookAt.LookAtTargetTypes.SpecifiedTransform && lookAtTarget != null)
+            if (head == null) return;
+
+            if (gaze != null)
             {
                 {
                     EditorGUI.BeginChangeCheck();
-                    var newTargetPosition = Handles.PositionHandle(lookAtTarget.position, Quaternion.identity);
+                    var newTargetPosition = Handles.PositionHandle(gaze.position, Quaternion.identity);
                     if (EditorGUI.EndChangeCheck())
                     {
-                        Undo.RecordObject(lookAtTarget, "Change Look At Target Position");
-                        lookAtTarget.position = newTargetPosition;
+                        Undo.RecordObject(gaze, "Change Look At Target Position");
+                        gaze.position = newTargetPosition;
                     }
                 }
 
                 Handles.color = new Color(1, 1, 1, 0.6f);
-                Handles.DrawDottedLine(runtime.LookAtOriginTransform.position, lookAtTarget.position, 4.0f);
+                Handles.DrawDottedLine(runtime.GetLookAtOrigin(head).position, gaze.position, 4.0f);
             }
 
-            var yaw = runtime.Yaw;
-            var pitch = runtime.Pitch;
-            var lookAtOriginMatrix = runtime.LookAtOriginTransform.localToWorldMatrix;
+            var (yaw, pitch) = runtime.GetLookAtYawPitch(head, lookAtTargetType, gaze);
+            var lookAtOriginMatrix = runtime.GetLookAtOrigin(head).localToWorldMatrix;
             Handles.matrix = lookAtOriginMatrix;
             var p = lookAt.OffsetFromHead;
             Handles.Label(Vector3.zero,

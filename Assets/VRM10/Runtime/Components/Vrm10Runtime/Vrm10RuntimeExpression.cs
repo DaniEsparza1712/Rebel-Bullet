@@ -12,7 +12,9 @@ namespace UniVRM10
         private Dictionary<ExpressionKey, float> _actualWeights = new Dictionary<ExpressionKey, float>();
         private ExpressionMerger _merger;
         private IExpressionValidator _validator;
+        private LookAtEyeDirection _inputEyeDirection;
         private LookAtEyeDirection _actualEyeDirection;
+        private ILookAtEyeDirectionProvider _eyeDirectionProvider;
         private ILookAtEyeDirectionApplicable _eyeDirectionApplicable;
 
         public IReadOnlyList<ExpressionKey> ExpressionKeys => _keys;
@@ -24,31 +26,22 @@ namespace UniVRM10
 
         int m_debugCount;
 
-        internal Vrm10RuntimeExpression(Vrm10Instance target, ILookAtEyeDirectionApplicable eyeDirectionApplicable)
+        internal Vrm10RuntimeExpression(Vrm10Instance target, ILookAtEyeDirectionProvider eyeDirectionProvider, ILookAtEyeDirectionApplicable eyeDirectionApplicable)
         {
             Restore();
 
             _merger = new ExpressionMerger(target.Vrm.Expression, target.transform);
-            _keys = target.Vrm.Expression.Clips
-                .Select(x => target.Vrm.Expression.CreateKey(x.Clip))
-                .ToList();
+            _keys = target.Vrm.Expression.Clips.Select(x => target.Vrm.Expression.CreateKey(x.Clip)).ToList();
             var oldInputWeights = _inputWeights;
-            _inputWeights = _keys.ToDictionary(
-                x => x,
-                x => 0f,
-                ExpressionKey.Comparer
-            );
+            _inputWeights = _keys.ToDictionary(x => x, x => 0f);
             foreach (var key in _keys)
             {
                 // remain user input weights.
                 if (oldInputWeights.ContainsKey(key)) _inputWeights[key] = oldInputWeights[key];
             }
-            _actualWeights = _keys.ToDictionary(
-                x => x,
-                x => 0f,
-                ExpressionKey.Comparer
-            );
+            _actualWeights = _keys.ToDictionary(x => x, x => 0f);
             _validator = ExpressionValidatorFactory.Create(target.Vrm.Expression);
+            _eyeDirectionProvider = eyeDirectionProvider;
             _eyeDirectionApplicable = eyeDirectionApplicable;
         }
 
@@ -61,9 +54,9 @@ namespace UniVRM10
             _eyeDirectionApplicable = null;
         }
 
-        internal void Process(LookAtEyeDirection inputEyeDirection)
+        internal void Process()
         {
-            Apply(inputEyeDirection);
+            Apply();
         }
 
         public IDictionary<ExpressionKey, float> GetWeights()
@@ -81,26 +74,21 @@ namespace UniVRM10
             return 0f;
         }
 
-        public void SetWeights(IEnumerable<KeyValuePair<ExpressionKey, float>> weights)
+        public LookAtEyeDirection GetEyeDirection()
         {
-            foreach (var (expressionKey, weight) in weights)
-            {
-                if (_inputWeights.ContainsKey(expressionKey))
-                {
-                    _inputWeights[expressionKey] = weight;
-                }
-            }
+            return _inputEyeDirection;
         }
 
-        public void SetWeightsNonAlloc(Dictionary<ExpressionKey, float> weights)
+        public void SetWeights(IEnumerable<KeyValuePair<ExpressionKey, float>> weights)
         {
-            foreach (var (expressionKey, weight) in weights)
+            foreach (var (expressionKey, weight) in weights.Select(kv => (kv.Key, kv.Value)))
             {
                 if (_inputWeights.ContainsKey(expressionKey))
                 {
                     _inputWeights[expressionKey] = weight;
                 }
             }
+            Apply();
         }
 
         public void SetWeight(ExpressionKey expressionKey, float weight)
@@ -109,23 +97,27 @@ namespace UniVRM10
             {
                 _inputWeights[expressionKey] = weight;
             }
+            Apply();
         }
 
         /// <summary>
         /// 入力 Weight を基に、Validation を行い実際にモデルに適用される Weights を計算し、Merger を介して適用する。
         /// この際、LookAt の情報を pull してそれも適用する。
         /// </summary>
-        private void Apply(LookAtEyeDirection inputEyeDirection)
+        private void Apply()
         {
-            // 1. Validate user input, and Output as actual weights.
+            // 1. Get eye direction from provider.
+            _inputEyeDirection = _eyeDirectionProvider?.EyeDirection ?? default;
+
+            // 2. Validate user input, and Output as actual weights.
             _validator.Validate(_inputWeights, _actualWeights,
-                inputEyeDirection, out _actualEyeDirection,
+                _inputEyeDirection, out _actualEyeDirection,
                 out var blink, out var lookAt, out var mouth);
 
-            // 2. Set eye direction expression weights or any other side-effects (ex. eye bone).
+            // 3. Set eye direction expression weights or any other side-effects (ex. eye bone).
             _eyeDirectionApplicable?.Apply(_actualEyeDirection, _actualWeights);
 
-            // 3. Set actual weights to raw blendshapes.
+            // 4. Set actual weights to raw blendshapes.
             _merger.SetValues(_actualWeights);
 
             BlinkOverrideRate = blink;

@@ -12,11 +12,7 @@
 #endif
 #ifndef MTOON_FRONT_FACE_TYPE
     // from https://docs.unity3d.com/Manual/SL-ShaderSemantics.html
-    #ifdef MTOON_URP
-        #define MTOON_FRONT_FACE_TYPE float
-    #else
-        #define MTOON_FRONT_FACE_TYPE fixed
-    #endif
+    #define MTOON_FRONT_FACE_TYPE fixed
 #endif
 #ifndef MTOON_IS_FRONT_VFACE
     #define MTOON_IS_FRONT_VFACE(VAL, FRONT, BACK) ((VAL > 0.0) ? (FRONT) : (BACK))
@@ -32,9 +28,7 @@ inline bool MToon_IsPbrCorrectOn()
 // Compile-time constant
 inline bool MToon_IsForwardBasePass()
 {
-#if defined(MTOON_URP)
-    return true;
-#elif defined(UNITY_PASS_FORWARDBASE)
+#if defined(UNITY_PASS_FORWARDBASE)
     return true;
 #elif defined(UNITY_PASS_FORWARDADD)
     return false;

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace UniVRM10.FastSpringBones.System
 {
-    [DefaultExecutionOrder(11010)]
+    [DefaultExecutionOrder(11000)]
     /// <summary>
     /// VRM-1.0 ではコンポーネントの処理順が規定されている
     /// 

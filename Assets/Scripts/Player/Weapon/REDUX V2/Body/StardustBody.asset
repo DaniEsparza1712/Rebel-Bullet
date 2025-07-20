@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63be57b2d485f474f9070c42c05fd2c4, type: 3}
+  m_Name: StardustBody
+  m_EditorClassIdentifier: 
+  bodyName: Stardust Body
+  bodyDescription: 
+  bodyPrefab: {fileID: 919132149155446097, guid: fae3550e22159e7469a2a953197a3768, type: 3}
+  damage: 12
+  projectileType: 0
+  projectileSpeed: 20
+  maxHeat: 100
+  movementSpeed: 5
+  heatDissipation: 2
+  fireRate: 3.4
+  barrelPosition: {x: -0.183, y: 0.031, z: 0}
+  stockPosition: {x: 0.594, y: 0.093, z: 0}
+  scopePosition: {x: 0, y: 0.147, z: 0}
+  gripPosition: {x: 0.409, y: -0.27, z: 0}
